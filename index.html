@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/src/index.css">
     <title>M list | new list</title>
 </head>
-
 <body>
-    <!-- modal -->
+    <!-- Modal for adding expenses -->
     <div class="modal" id="addExpenseModal">
         <div class="modal-content">
             <span class="close-button" id="closeModal">&times;</span>
@@ -28,77 +26,51 @@
         </div>
     </div>
 
-    <!-- end modal -->
-
+    <!-- Top navigation with profile picture -->
     <div class="top-nav-bar">
         <button class="account-info">
             <img id="profileImage" alt="บัญชี" width="32" height="32">
         </button>
     </div>
 
+    <!-- Expense list -->
     <div id="expenseList"></div>
 
+    <!-- Bottom navigation for adding new list -->
     <div class="bottom-nav">
         <button class="bottom-wide-button">+ add new list</button>
     </div>
 
-</body>
-<script src="/src/js/main.js"></script>
+    <script src="/src/js/main.js"></script>
 
-<script>
-    window.onload = function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const authCode = urlParams.get('code');
+    <script>
+        // Get the access token from LocalStorage
+        const accessToken = localStorage.getItem('accessToken');
 
-        if (authCode) {
-            const clientId = '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com';
-            const clientSecret = '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';
-            const redirectUri = 'https://supanat-hub.github.io';
-
-            // เรียกใช้ token endpoint
-            fetch(`https://oauth2.googleapis.com/token`, {
-                method: 'POST',
+        if (accessToken) {
+            // Fetch user profile including photo
+            fetch('https://people.googleapis.com/v1/people/me?personFields=photos', {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    code: authCode,
-                    client_id: clientId,
-                    client_secret: clientSecret,
-                    redirect_uri: redirectUri,
-                    grant_type: 'authorization_code'
-                })
+                    Authorization: `Bearer ${accessToken}`
+                }
             })
-                .then(response => response.json())
-                .then(data => {
-                    const accessToken = data.access_token;
+            .then(response => response.json())
+            .then(profileData => {
+                const profilePicUrl = profileData.photos && profileData.photos[0] ? profileData.photos[0].url : null;
 
-                    // ใช้ accessToken เพื่อดึงข้อมูลโปรไฟล์
-                    fetch('https://people.googleapis.com/v1/people/me?personFields=photos', {
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(profileData => {
-                            if (profileData.photos && profileData.photos.length > 0) {
-                                const profilePicUrl = profileData.photos[0].url;
-                                document.getElementById("profileImage").src = profilePicUrl;
-                            } else {
-                                console.log("No profile image available.");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error fetching profile data:", error);
-                        });
-                })
-                .catch(error => {
-                    console.error('Error fetching access token:', error);
-                });
+                // If no profile pic found, use a default image
+                document.getElementById("profileImage").src = profilePicUrl || '/img/account.svg';
+            })
+            .catch(error => {
+                console.error('Error fetching profile:', error);
+                // Use default image if error occurs
+                document.getElementById("profileImage").src = '/img/account.svg';
+            });
+        } else {
+            console.log('No access token found.');
+            console.log('use gust acc.');
+            document.getElementById("profileImage").src = '/img/account.svg';
         }
-    };
-
-
-</script>
-
+    </script>
+</body>
 </html>

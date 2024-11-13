@@ -54,6 +54,9 @@ saveExpenseButton.addEventListener("click", async () => {
         return;
     }
 
+    // สร้างสถานะการจ่ายเงิน (ยังไม่จ่าย) สำหรับทุกคน
+    const paymentStatus = friends.map(() => 'not_paid'); // สร้างสถานะ "ยังไม่จ่าย" ให้กับเพื่อนทั้งหมด
+
     // ส่งข้อมูลไปยัง Google Sheets API
     fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!A1:append?valueInputOption=USER_ENTERED`, {
         method: 'POST',
@@ -63,7 +66,7 @@ saveExpenseButton.addEventListener("click", async () => {
         },
         body: JSON.stringify({
             values: [
-                [userId, new Date().toLocaleString(), expenseName, amount, friends.join(', ')]
+                [userId, new Date().toLocaleString(), expenseName, amount, friends.join(', '), paymentStatus.join(', ')] // Add payment statuses here
             ]
         })
     })
@@ -79,12 +82,12 @@ saveExpenseButton.addEventListener("click", async () => {
             <p>จำนวนเงิน: ${amount} บาท</p>
             <h4>สถานะการจ่ายเงิน:</h4>
             <ul>
-                ${friends.map(friend => `
+                ${friends.map((friend, index) => `
                     <li>
                         <span>${friend}</span>
                         <select class="payment-status">
-                            <option value="not_paid">ยังไม่จ่าย</option>
-                            <option value="paid">จ่ายแล้ว</option>
+                            <option value="not_paid" ${paymentStatus[index] === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
+                            <option value="paid" ${paymentStatus[index] === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
                         </select>
                     </li>
                 `).join('')}

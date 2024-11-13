@@ -18,18 +18,36 @@ if (accessToken) {
             Authorization: `Bearer ${accessToken}`
         }
     })
-    .then(response => response.json())
-    .then(profileData => {
-        const profilePicUrl = profileData.photos && profileData.photos[0] ? profileData.photos[0].url : '/img/account.svg';
+        .then(response => response.json())
+        .then(profileData => {
+            const profilePicUrl = profileData.photos && profileData.photos[0] ? profileData.photos[0].url : '/img/account.svg';
 
-        // Display the profile picture or default image
-        document.getElementById("profileImage").src = profilePicUrl;
-    })
-    .catch(error => {
-        console.error('Error fetching profile:', error);
-        document.getElementById("profileImage").src = '/img/account.svg';
-    });
+            // Display the profile picture or default image
+            document.getElementById("profileImage").src = profilePicUrl;
+        })
+        .catch(error => {
+            console.error('Error fetching profile:', error);
+            document.getElementById("profileImage").src = '/img/account.svg';
+        });
 } else {
+    // Function to display login modal if no access token found
+    function displayLoginModal() {
+        const loginModal = document.createElement('div');
+        loginModal.classList.add('modal');
+        loginModal.style.display = 'flex';
+        loginModal.innerHTML = `
+        <div class="login-modal-content">
+            <h2>ล็อกอินเพื่อเข้าถึง</h2>
+            <p>กรุณาล็อกอินก่อนเริ่มใช้งาน</p>
+            <center>
+                <button class="login-button" onclick="redirectToLogin()">
+                    <img src="/img/google.png" alt="Google Logo"> ล็อกอินด้วย Google
+                </button>
+            </center>
+        </div>
+    `;
+        document.body.appendChild(loginModal);
+    }
     console.log('No access token found. Using guest account.');
     document.getElementById("profileImage").src = '/img/account.svg';
     displayLoginModal();
@@ -49,12 +67,12 @@ function getUserId(accessToken) {
     return fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` }
     })
-    .then(response => response.json())
-    .then(data => data.sub)
-    .catch(error => {
-        console.error('Error fetching user ID:', error);
-        return null;
-    });
+        .then(response => response.json())
+        .then(data => data.sub)
+        .catch(error => {
+            console.error('Error fetching user ID:', error);
+            return null;
+        });
 }
 
 // Function to fetch expenses for the logged-in user
@@ -63,16 +81,16 @@ function fetchUserExpenses(userId, accessToken) {
     fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1`, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
     })
-    .then(response => response.json())
-    .then(data => {
-        const rows = data.values;
-        const userExpenses = rows.filter(row => row[0] === userId);
-        console.log('User expenses:', userExpenses);
+        .then(response => response.json())
+        .then(data => {
+            const rows = data.values;
+            const userExpenses = rows.filter(row => row[0] === userId);
+            console.log('User expenses:', userExpenses);
 
-        // แสดงข้อมูล userExpenses ในหน้าเว็บ (ปรับแต่งการแสดงผลตามต้องการ)
-        displayExpenses(userExpenses);
-    })
-    .catch(error => console.error('Error fetching user expenses:', error));
+            // แสดงข้อมูล userExpenses ในหน้าเว็บ (ปรับแต่งการแสดงผลตามต้องการ)
+            displayExpenses(userExpenses);
+        })
+        .catch(error => console.error('Error fetching user expenses:', error));
 }
 
 // Function to display expenses on the web page
@@ -104,7 +122,7 @@ function displayExpenses(expenses) {
 }
 
 // ฟังก์ชันเพื่ออัปเดตสถานะการจ่ายเงิน
-document.getElementById('expenseList').addEventListener('change', function(event) {
+document.getElementById('expenseList').addEventListener('change', function (event) {
     if (event.target.classList.contains('payment-status')) {
         const status = event.target.value;
         const rowIndex = event.target.getAttribute('data-row');
@@ -128,29 +146,10 @@ document.getElementById('expenseList').addEventListener('change', function(event
                 ]
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Payment status updated:', data);
-        })
-        .catch(error => console.error('Error updating payment status:', error));
+            .then(response => response.json())
+            .then(data => {
+                console.log('Payment status updated:', data);
+            })
+            .catch(error => console.error('Error updating payment status:', error));
     }
 });
-
-// Function to display login modal if no access token found
-function displayLoginModal() {
-    const loginModal = document.createElement('div');
-    loginModal.classList.add('modal');
-    loginModal.style.display = 'flex';
-    loginModal.innerHTML = `
-        <div class="login-modal-content">
-            <h2>ล็อกอินเพื่อเข้าถึง</h2>
-            <p>กรุณาล็อกอินก่อนเริ่มใช้งาน</p>
-            <center>
-                <button class="login-button" onclick="redirectToLogin()">
-                    <img src="/img/google.png" alt="Google Logo"> ล็อกอินด้วย Google
-                </button>
-            </center>
-        </div>
-    `;
-    document.body.appendChild(loginModal);
-}

@@ -108,7 +108,6 @@ function displayExpenses(expenses) {
     });
 }
 
-// ฟังก์ชันเพื่ออัปเดตสถานะการจ่ายเงิน
 // ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
 document.getElementById('expenseList').addEventListener('change', function(event) {
     if (event.target.classList.contains('payment-status')) {
@@ -144,7 +143,7 @@ document.getElementById('expenseList').addEventListener('change', function(event
         // สร้างข้อมูลใหม่ที่จะอัปเดตใน Google Sheets
         const requestBody = {
             range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // แถวและคอลัมน์ที่ต้องการอัปเดต
-            values: [[updatedStatuses]]  // ค่าที่จะอัปเดตในคอลัมน์ F
+            values: [friendsStatuses]  // ส่งสถานะในรูปแบบ array 2 มิติ
         };
 
         console.log('Request body:', JSON.stringify(requestBody));
@@ -158,7 +157,7 @@ document.getElementById('expenseList').addEventListener('change', function(event
             },
             body: JSON.stringify({
                 range: `Sheet1!F${parseInt(rowIndex) + 1}`,
-                values: [[updatedStatuses]],  // อัปเดตสถานะใหม่ในแถวที่ระบุ
+                values: [friendsStatuses],  // ส่งสถานะในรูปแบบ array 2 มิติ
                 valueInputOption: 'USER_ENTERED'
             })
         })

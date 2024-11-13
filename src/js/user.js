@@ -122,7 +122,9 @@ document.getElementById('expenseList').addEventListener('change', function(event
 
         // ส่งการอัปเดตไปยัง Google Sheets
         const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';  // <-- ใส่ ID ของ Google Sheets
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!E${parseInt(rowIndex) + 1}:update`, {
+        const range = `Sheet1!E${parseInt(rowIndex) + 1}`;  // ช่วงของคอลัมน์ที่ต้องการอัปเดต
+
+        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -130,7 +132,7 @@ document.getElementById('expenseList').addEventListener('change', function(event
             },
             body: JSON.stringify({
                 values: [
-                    [status]
+                    [status]  // ส่งค่า status ที่เลือกไป
                 ]
             })
         })

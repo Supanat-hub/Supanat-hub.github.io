@@ -21,9 +21,9 @@
                 },
                 body: new URLSearchParams({
                     code: authCode,
-                    client_id: 'YOUR_CLIENT_ID',
-                    client_secret: 'YOUR_CLIENT_SECRET',
-                    redirect_uri: 'https://supanat-hub.github.io/oauth2callback',
+                    client_id: '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com',
+                    client_secret: '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',
+                    redirect_uri: 'https://supanat-hub.github.io/callback',
                     grant_type: 'authorization_code'
                 })
             })
@@ -35,7 +35,7 @@
                 localStorage.setItem('accessToken', accessToken);
 
                 // Redirect ไปหน้าหลัก
-                window.location.href = "https://supanat-hub.github.io/";
+                window.location.href = "https://supanat-hub.github.io";
             })
             .catch(error => {
                 console.error('Error:', error);

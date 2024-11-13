@@ -35,6 +35,8 @@
                     // เก็บ accessToken ใน LocalStorage
                     localStorage.setItem('accessToken', accessToken);
                     document.body.innerHTML = '<h3>Success</h3>';
+                    const accessToken_ed = localStorage.getItem('accessToken');
+                    document.body.innerHTML = `<h3>${accessToken_ed}</h3>`;
 
                     // Redirect ไปหน้าหลัก
                     window.location.href = "https://supanat-hub.github.io/";

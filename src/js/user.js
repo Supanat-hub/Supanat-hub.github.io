@@ -40,6 +40,11 @@ if (accessToken) {
 
     // Function to redirect to the login page
     function redirectToLogin() {
-        window.location.href = "/login";
+        const clientId = '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com';
+        const redirectUri = 'https://supanat-hub.github.io/callback';
+        const scope = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile';// หรือ scope ที่ต้องการ
+
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+        window.location.href = authUrl;
     }
 }

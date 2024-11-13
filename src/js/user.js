@@ -109,6 +109,7 @@ function displayExpenses(expenses) {
 }
 
 // ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
+// ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
 document.getElementById('expenseList').addEventListener('change', function(event) {
     if (event.target.classList.contains('payment-status')) {
         const status = event.target.value;  // ค่าใหม่ที่เลือก
@@ -156,9 +157,8 @@ document.getElementById('expenseList').addEventListener('change', function(event
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                range: `Sheet1!F${parseInt(rowIndex) + 1}`,
-                values: [friendsStatuses],  // ส่งสถานะในรูปแบบ array 2 มิติ
-                valueInputOption: 'USER_ENTERED'
+                range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // แถวและคอลัมน์ที่ต้องการอัปเดต
+                values: [friendsStatuses]  // ส่งสถานะในรูปแบบ array 2 มิติ
             })
         })
         .then(response => response.json())

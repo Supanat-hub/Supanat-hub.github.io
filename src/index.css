@@ -82,6 +82,57 @@
 
 /* top manu end*/
 
+/* log in modal */
+.login-modal-content {
+    position: relative;
+    margin: auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 300px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.login-modal-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.login-modal-content p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.login-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #fff;
+    background-color: #4285F4;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-button:hover {
+    background-color: #357ae8;
+}
+
+.login-button img {
+    margin-right: 10px;
+    width: 30px;
+    height: 30px;
+}
+
+/* log in modal end*/
+
 /* mondal */
 /* สไตล์สำหรับ modal */
 .modal {

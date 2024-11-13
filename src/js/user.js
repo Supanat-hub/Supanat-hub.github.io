@@ -120,22 +120,42 @@ document.getElementById('expenseList').addEventListener('change', function(event
             return;
         }
 
-        // ส่งการอัปเดตไปยัง Google Sheets
         const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';  // <-- ใส่ ID ของ Google Sheets
         const range = `Sheet1!F${parseInt(rowIndex) + 1}`;  // ใช้คอลัมน์ F แทนคอลัมน์ E
-        console.log(`gonna edit Sheet1!F : ${parseInt(rowIndex) + 1}`)
 
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`, {
-            method: 'PUT',
+        const requestBody = {
+            requests: [
+                {
+                    updateCells: {
+                        range: {
+                            sheetId: 0,  // หมายเลข sheet ที่ต้องการอัปเดต (0 คือแผ่นงานแรก)
+                            startRowIndex: rowIndex,
+                            endRowIndex: rowIndex + 1,
+                            startColumnIndex: 5,  // คอลัมน์ F (เริ่มจาก 0)
+                            endColumnIndex: 6
+                        },
+                        rows: [
+                            {
+                                values: [
+                                    {
+                                        userEnteredValue: { stringValue: status }
+                                    }
+                                ]
+                            }
+                        ],
+                        fields: 'userEnteredValue'
+                    }
+                }
+            ]
+        };
+
+        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+            method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                values: [
-                    [status]  // ส่งค่า status ที่เลือกไป
-                ]
-            })
+            body: JSON.stringify(requestBody)
         })
         .then(response => response.json())
         .then(data => {

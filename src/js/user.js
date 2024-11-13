@@ -147,6 +147,9 @@ document.getElementById('expenseList').addEventListener('change', function(event
                 values: [[updatedStatuses]]  // ค่าที่จะอัปเดตในคอลัมน์ F
             };
 
+            // Log ข้อมูลที่จะส่งไป
+            console.log('Request body:', JSON.stringify(requestBody));
+
             // อัปเดตสถานะใหม่ใน Google Sheets
             fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`, {
                 method: 'PUT',
@@ -159,8 +162,11 @@ document.getElementById('expenseList').addEventListener('change', function(event
             .then(response => response.json())
             .then(data => {
                 console.log('Payment status updated:', data);
+                // แสดงข้อมูลที่อัปเดตใน console เพื่อยืนยันว่าได้รับการอัปเดต
             })
-            .catch(error => console.error('Error updating payment status:', error));
+            .catch(error => {
+                console.error('Error updating payment status:', error);
+            });
         })
         .catch(error => console.error('Error fetching current payment statuses:', error));
     }

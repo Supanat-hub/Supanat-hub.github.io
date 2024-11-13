@@ -135,3 +135,22 @@ document.getElementById('expenseList').addEventListener('change', function(event
         .catch(error => console.error('Error updating payment status:', error));
     }
 });
+
+// Function to display login modal if no access token found
+function displayLoginModal() {
+    const loginModal = document.createElement('div');
+    loginModal.classList.add('modal');
+    loginModal.style.display = 'flex';
+    loginModal.innerHTML = `
+        <div class="login-modal-content">
+            <h2>ล็อกอินเพื่อเข้าถึง</h2>
+            <p>กรุณาล็อกอินก่อนเริ่มใช้งาน</p>
+            <center>
+                <button class="login-button" onclick="redirectToLogin()">
+                    <img src="/img/google.png" alt="Google Logo"> ล็อกอินด้วย Google
+                </button>
+            </center>
+        </div>
+    `;
+    document.body.appendChild(loginModal);
+}

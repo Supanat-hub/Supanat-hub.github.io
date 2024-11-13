@@ -54,8 +54,8 @@ saveExpenseButton.addEventListener("click", async () => {
         return;
     }
 
-    // สร้างสถานะการจ่ายเงิน (ยังไม่จ่าย) สำหรับทุกคน
-    const paymentStatus = friends.map(() => 'not_paid'); // สร้างสถานะ "ยังไม่จ่าย" ให้กับเพื่อนทั้งหมด
+    // สร้างสถานะการจ่ายเงินเริ่มต้น (not_paid) สำหรับทุกเพื่อน
+    const paymentStatus = new Array(friends.length).fill("not_paid").join(", ");
 
     // ส่งข้อมูลไปยัง Google Sheets API
     fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!A1:append?valueInputOption=USER_ENTERED`, {
@@ -66,7 +66,7 @@ saveExpenseButton.addEventListener("click", async () => {
         },
         body: JSON.stringify({
             values: [
-                [userId, new Date().toLocaleString(), expenseName, amount, friends.join(', '), paymentStatus.join(', ')] // Add payment statuses here
+                [userId, new Date().toLocaleString(), expenseName, amount, friends.join(', '), paymentStatus] // เพิ่มสถานะการจ่ายเงินเริ่มต้น
             ]
         })
     })
@@ -74,29 +74,8 @@ saveExpenseButton.addEventListener("click", async () => {
     .then(data => {
         console.log('Expense added to Google Sheets:', data);
 
-        // สร้างการ์ดรายการใหม่ใน UI
-        const expenseItem = document.createElement("div");
-        expenseItem.className = "expense-item";
-        expenseItem.innerHTML = `
-            <h3>${expenseName}</h3>
-            <p>จำนวนเงิน: ${amount} บาท</p>
-            <h4>สถานะการจ่ายเงิน:</h4>
-            <ul>
-                ${friends.map((friend, index) => `
-                    <li>
-                        <span>${friend}</span>
-                        <select class="payment-status">
-                            <option value="not_paid" ${paymentStatus[index] === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
-                            <option value="paid" ${paymentStatus[index] === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
-                        </select>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-
-        // เพิ่มการ์ดใหม่ลงในหน้าหลัก
-        const insertChild = document.getElementById("expenseList");
-        insertChild.insertBefore(expenseItem, insertChild.firstChild);
+        // เรียกฟังก์ชันใน user.js เพื่อนำข้อมูลค่าใช้จ่ายที่อัปเดตมาแสดงใน UI
+        fetchUserExpenses(userId, accessToken);
 
         // ล้างค่าในฟอร์มหลังบันทึก
         document.getElementById("expenseName").value = '';

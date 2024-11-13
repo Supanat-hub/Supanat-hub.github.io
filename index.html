@@ -53,16 +53,23 @@
     <script src="/src/js/main.js"></script>
     <script src="/src/js/user.js"></script>
     <script>
-        document.getElementById("profileButton").addEventListener("click", function () {
+        document.addEventListener("DOMContentLoaded", function () {
+            const profileButton = document.getElementById("profileButton");
             const profileMenu = document.getElementById("profileMenu");
-            profileMenu.style.display = profileMenu.style.display === "none" ? "block" : "none";
+
+            profileButton.addEventListener("click", function () {
+                // Toggle visibility of the profile menu
+                profileMenu.style.display = profileMenu.style.display === "block" ? "none" : "block";
+            });
+
+            // Close the menu if clicked outside
+            document.addEventListener("click", function (event) {
+                if (!profileButton.contains(event.target) && !profileMenu.contains(event.target)) {
+                    profileMenu.style.display = "none";
+                }
+            });
         });
 
-        function logout() {
-            // ลบ access token และทำ redirect
-            localStorage.removeItem('accessToken');
-            window.location.href = 'https://your-login-page.com';
-        }
 
     </script>
 </body>

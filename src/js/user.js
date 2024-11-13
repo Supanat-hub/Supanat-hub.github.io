@@ -122,7 +122,7 @@ document.getElementById('expenseList').addEventListener('change', function(event
 
         // ส่งการอัปเดตไปยัง Google Sheets
         const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';  // <-- ใส่ ID ของ Google Sheets
-        const range = `Sheet1!E${parseInt(rowIndex) + 1}`;  // ช่วงของคอลัมน์ที่ต้องการอัปเดต
+        const range = `Sheet1!F${parseInt(rowIndex) + 1}`;  // ช่วงของคอลัมน์ที่ต้องการอัปเดต
 
         fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`, {
             method: 'PUT',

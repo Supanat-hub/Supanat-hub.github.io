@@ -109,7 +109,6 @@ function displayExpenses(expenses) {
 }
 
 // ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
-// ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
 document.getElementById('expenseList').addEventListener('change', function(event) {
     if (event.target.classList.contains('payment-status')) {
         const status = event.target.value;  // ค่าใหม่ที่เลือก
@@ -144,7 +143,7 @@ document.getElementById('expenseList').addEventListener('change', function(event
         // สร้างข้อมูลใหม่ที่จะอัปเดตใน Google Sheets
         const requestBody = {
             range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // แถวและคอลัมน์ที่ต้องการอัปเดต
-            values: [friendsStatuses]  // ส่งสถานะในรูปแบบ array 2 มิติ
+            values: [[updatedStatuses]]  // ส่งสถานะในรูปแบบข้อความเดียว
         };
 
         console.log('Request body:', JSON.stringify(requestBody));
@@ -156,10 +155,7 @@ document.getElementById('expenseList').addEventListener('change', function(event
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // แถวและคอลัมน์ที่ต้องการอัปเดต
-                values: [friendsStatuses]  // ส่งสถานะในรูปแบบ array 2 มิติ
-            })
+            body: JSON.stringify(requestBody)  // ส่งข้อมูลตามที่เตรียมไว้
         })
         .then(response => response.json())
         .then(data => {

@@ -109,65 +109,65 @@ function displayExpenses(expenses) {
 }
 
 // ฟังก์ชันเพื่ออัปเดตสถานะการจ่ายเงิน
+// ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
 document.getElementById('expenseList').addEventListener('change', function(event) {
     if (event.target.classList.contains('payment-status')) {
-        const status = event.target.value;
-        const rowIndex = event.target.getAttribute('data-row');  // ดึงแถวที่เลือก
-        const friendIndex = event.target.getAttribute('data-friend-index');  // ดึงตำแหน่งของเพื่อนที่เลือก
+        const status = event.target.value;  // ค่าใหม่ที่เลือก
+        const rowIndex = event.target.getAttribute('data-row');  // ดัชนีของแถวที่ถูกเลือก
+
         const accessToken = localStorage.getItem('accessToken');
-        
         if (!accessToken) {
             console.error('Access token not found.');
             return;
         }
 
-        const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';  // ใส่ ID ของ Google Sheets
-        const range = `Sheet1!F${parseInt(rowIndex) + 1}`;  // คอลัมน์ F ในแถวที่ต้องการอัปเดต
+        // ดึงสถานะเพื่อนจากที่เก็บใน UI
+        const expenseItems = document.querySelectorAll('.expense-item');
+        const expenseItem = expenseItems[rowIndex];  // เลือกการ์ดที่ถูกแก้ไข
+        const friends = expenseItem.querySelectorAll('ul li span');
+        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);  // ดึงสถานะปัจจุบัน
 
-        // ดึงสถานะปัจจุบันจาก Google Sheets
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`, {
+        // log สถานะก่อนอัปเดต
+        console.log('Current statuses before update:', friendsStatuses);
+
+        // อัปเดตสถานะของเพื่อนคนที่เลือก
+        const friendIndex = Array.from(friends).findIndex(friend => friend.textContent === event.target.previousElementSibling.textContent);
+        friendsStatuses[friendIndex] = status;  // เปลี่ยนสถานะของเพื่อนคนนี้
+
+        // log สถานะหลังการอัปเดต
+        console.log('Updated statuses:', friendsStatuses);
+
+        // สร้าง string ใหม่สำหรับสถานะ
+        const updatedStatuses = friendsStatuses.join(', ');  // รวมสถานะใหม่ทั้งหมด
+        console.log('Updated statuses to send:', updatedStatuses);
+
+        // สร้างข้อมูลใหม่ที่จะอัปเดตใน Google Sheets
+        const requestBody = {
+            range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // แถวและคอลัมน์ที่ต้องการอัปเดต
+            values: [[updatedStatuses]]  // ค่าที่จะอัปเดตในคอลัมน์ F
+        };
+
+        console.log('Request body:', JSON.stringify(requestBody));
+
+        // ส่งข้อมูลไปยัง Google Sheets API
+        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!F${parseInt(rowIndex) + 1}:update`, {
+            method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                range: `Sheet1!F${parseInt(rowIndex) + 1}`,
+                values: [[updatedStatuses]],  // อัปเดตสถานะใหม่ในแถวที่ระบุ
+                valueInputOption: 'USER_ENTERED'
+            })
         })
         .then(response => response.json())
         .then(data => {
-            const currentStatuses = data.values ? data.values[0] : [];  // ค่าปัจจุบันในคอลัมน์ F
-            const friendsStatuses = currentStatuses.length > 0 ? currentStatuses[0].split(', ') : [];  // แปลงค่ามาเป็นอาร์เรย์
-
-            // อัปเดตสถานะของเพื่อนคนที่เลือก
-            friendsStatuses[friendIndex] = status;  // เปลี่ยนสถานะของเพื่อนคนนี้
-
-            // สร้าง string ใหม่สำหรับสถานะ
-            const updatedStatuses = friendsStatuses.join(', ');  // รวมสถานะใหม่ทั้งหมด
-
-            // สร้างข้อมูลใหม่ที่จะอัปเดตใน Google Sheets
-            const requestBody = {
-                range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // แถวและคอลัมน์ที่ต้องการอัปเดต
-                values: [[updatedStatuses]]  // ค่าที่จะอัปเดตในคอลัมน์ F
-            };
-
-            // Log ข้อมูลที่จะส่งไป
-            console.log('Request body:', JSON.stringify(requestBody));
-
-            // อัปเดตสถานะใหม่ใน Google Sheets
-            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Payment status updated:', data);
-                // แสดงข้อมูลที่อัปเดตใน console เพื่อยืนยันว่าได้รับการอัปเดต
-            })
-            .catch(error => {
-                console.error('Error updating payment status:', error);
-            });
+            console.log('Payment status updated:', data);
         })
-        .catch(error => console.error('Error fetching current payment statuses:', error));
+        .catch(error => {
+            console.error('Error updating payment status:', error);
+        });
     }
 });

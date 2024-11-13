@@ -47,22 +47,36 @@
 
 <script>
     window.onload = function () {
-        const accessToken = localStorage.getItem('accessToken');
-        if (accessToken) {
-            fetch('https://people.googleapis.com/v1/people/me?personFields=photos', {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
+        const urlParams = new URLSearchParams(window.location.search);
+        const authCode = urlParams.get('code');
+
+        if (authCode) {
+            fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    code: authCode,
+                    client_id: '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com',
+                    client_secret: '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',
+                    redirect_uri: 'https://supanat-hub.github.io/',
+                    grant_type: 'authorization_code',
+                }),
             })
                 .then(response => response.json())
-                .then(profileData => {
-                    const profilePicUrl = profileData.photos[0].url;
-                    document.getElementById("profileImage").src = profilePicUrl;
-                })
-                .catch(error => {
-                    console.error("Error fetching profile data:", error);
+                .then(data => {
+                    const accessToken = data.access_token;
+                    fetch('https://people.googleapis.com/v1/people/me?personFields=photos', {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(profileData => {
+                            const profilePicUrl = profileData.photos[0].url;
+                            document.getElementById("profileImage").src = profilePicUrl;
+                        });
                 });
         }
+
     };
 
 

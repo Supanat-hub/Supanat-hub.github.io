@@ -39,6 +39,6 @@ if (accessToken) {
 
     // Function to redirect to the login page
     function redirectToLogin() {
-        window.location.href = "https://accounts.google.com/o/oauth2/v2/auth?scope=profile&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=token";
+        window.location.href = "/login";
     }
 }

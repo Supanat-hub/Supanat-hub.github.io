@@ -55,6 +55,33 @@
     padding-bottom: 1rem;
 }
 
+/* top manu */
+.profile-menu {
+    position: absolute;
+    top: 60px; /* ระยะห่างจากด้านบน */
+    left: 15px;
+    width: 150px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: none; /* ซ่อนโดยเริ่มต้น */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.profile-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.profile-menu li {
+    padding: 10px;
+    cursor: pointer;
+}
+.profile-menu li:hover {
+    background-color: #f0f0f0;
+}
+
+/* top manu end*/
+
 /* mondal */
 /* สไตล์สำหรับ modal */
 .modal {

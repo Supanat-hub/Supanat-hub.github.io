@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/src/index.css">
     <title>M list | new list</title>
 </head>
+
 <body>
     <!-- Modal for adding expenses -->
     <div class="modal" id="addExpenseModal">
@@ -28,9 +30,16 @@
 
     <!-- Top navigation with profile picture -->
     <div class="top-nav-bar">
-        <button class="account-info">
+        <button id="profileButton" class="account-info">
             <img id="profileImage" alt="บัญชี" width="32" height="32">
         </button>
+        <div class="profile-menu" id="profileMenu">
+            <ul>
+                <li>Profile</li>
+                <li>Settings</li>
+                <li onclick="logout()">Logout</li>
+            </ul>
+        </div>
     </div>
 
     <!-- Expense list -->
@@ -43,5 +52,19 @@
 
     <script src="/src/js/main.js"></script>
     <script src="/src/js/user.js"></script>
+    <script>
+        document.getElementById("profileButton").addEventListener("click", function () {
+            const profileMenu = document.getElementById("profileMenu");
+            profileMenu.style.display = profileMenu.style.display === "block" ? "none" : "block";
+        });
+
+        function logout() {
+            // ลบ access token และทำ redirect ออกไปยังหน้า login
+            localStorage.removeItem('accessToken');
+            window.location.href = 'https://your-login-page.com';
+        }
+
+    </script>
 </body>
+
 </html>

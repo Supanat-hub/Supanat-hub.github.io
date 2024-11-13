@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth 2.0 Callback</title>
+</head>
+<body>
+    <h2>Processing authentication...</h2>
+    <script>
+        // รับข้อมูล `code` จาก URL เมื่อ Google ส่งกลับมา
+        const urlParams = new URLSearchParams(window.location.search);
+        const authCode = urlParams.get('code');
+
+        if (authCode) {
+            // ส่ง code ไปยังเซิร์ฟเวอร์หรือประมวลผล token ต่อไป
+            // ในที่นี้คุณสามารถส่ง `authCode` ไปยังเซิร์ฟเวอร์เพื่อแลกเป็น access token
+
+            // ตัวอย่างการแสดงผล authCode
+            console.log('Authorization Code:', authCode);
+
+            // คุณสามารถทำ redirect ไปหน้าหลักหรือแสดงข้อความแจ้งผู้ใช้
+            document.body.innerHTML = '<h3>Authentication successful!</h3>';
+            setTimeout(() => {
+                window.location.href = "https://supanat-hub.github.io/";
+            }, 2000);
+        } else {
+            document.body.innerHTML = '<h3>Authentication failed. No code found.</h3>';
+        }
+    </script>
+</body>
+</html>

@@ -22,13 +22,14 @@ if (accessToken) {
     });
 } else {
     console.log('No access token found. Using guest account.');
-    
-    // Set profile image to default and display modal
+
+    // Set profile image to default
     document.getElementById("profileImage").src = '/img/account.svg';
 
-    // Show modal to inform the user they need to log in
+    // Create and display the login modal
     const loginModal = document.createElement('div');
     loginModal.classList.add('modal');
+    loginModal.style.display = 'flex';
     loginModal.innerHTML = `
         <div class="modal-content">
             <h2>กรุณาล็อกอินก่อนใช้งาน</h2>

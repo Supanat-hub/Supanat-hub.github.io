@@ -4,19 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตรวจสอบ Access Token</title>
+    <title>ตรวจสอบ Access Token และดึงรูปโปรไฟล์</title>
 </head>
 
 <body>
-    <h1>ตรวจสอบ Access Token</h1>
+    <h1>ตรวจสอบ Access Token และรูปโปรไฟล์</h1>
 
     <button id="loginButton">ล็อกอินด้วย Google</button>
     <p>Access Token: <span id="accessToken"></span></p>
-
+    <img id="profileImage" alt="Profile Image" width="100" height="100">
+    
     <script>
         document.getElementById("loginButton").onclick = function() {
             const clientId = '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com';
-            const redirectUri = 'https://supanat-hub.github.io';
+            const redirectUri = 'https://supanat-hub.github.io/';
             const scope = 'https://www.googleapis.com/auth/userinfo.profile';
 
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
@@ -30,7 +31,7 @@
             if (authCode) {
                 const clientId = '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com';
                 const clientSecret = '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';
-                const redirectUri = 'https://supanat-hub.github.io';
+                const redirectUri = 'https://supanat-hub.github.io/';
 
                 fetch('https://oauth2.googleapis.com/token', {
                     method: 'POST',
@@ -50,6 +51,25 @@
                     const accessToken = data.access_token;
                     document.getElementById('accessToken').textContent = accessToken; // แสดง access token
                     console.log('Access Token:', accessToken); // ตรวจสอบ token ใน console
+
+                    // ดึงข้อมูลโปรไฟล์
+                    fetch('https://people.googleapis.com/v1/people/me?personFields=photos', {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(profileData => {
+                        if (profileData.photos && profileData.photos.length > 0) {
+                            const profilePicUrl = profileData.photos[0].url;
+                            document.getElementById('profileImage').src = profilePicUrl; // แสดงรูปโปรไฟล์
+                        } else {
+                            console.log("No profile image available.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching profile data:', error);
+                    });
                 })
                 .catch(error => {
                     console.error('Error fetching access token:', error);

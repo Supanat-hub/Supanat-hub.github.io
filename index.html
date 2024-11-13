@@ -55,11 +55,11 @@
     <script>
         document.getElementById("profileButton").addEventListener("click", function () {
             const profileMenu = document.getElementById("profileMenu");
-            profileMenu.style.display = profileMenu.style.display === "block" ? "none" : "block";
+            profileMenu.style.display = profileMenu.style.display === "none" ? "block" : "none";
         });
 
         function logout() {
-            // ลบ access token และทำ redirect ออกไปยังหน้า login
+            // ลบ access token และทำ redirect
             localStorage.removeItem('accessToken');
             window.location.href = 'https://your-login-page.com';
         }

@@ -121,46 +121,46 @@ document.getElementById('expenseList').addEventListener('change', function(event
         }
 
         const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';  // <-- ใส่ ID ของ Google Sheets
-        const range = `Sheet1!F${parseInt(rowIndex) + 1}`;  // ใช้คอลัมน์ F แทนคอลัมน์ E
+        const range = `Sheet1!F${parseInt(rowIndex) + 1}`;  // คอลัมน์ F ที่ต้องการอัปเดต
 
-        const requestBody = {
-            requests: [
-                {
-                    updateCells: {
-                        range: {
-                            sheetId: 0,  // หมายเลข sheet ที่ต้องการอัปเดต (0 คือแผ่นงานแรก)
-                            startRowIndex: rowIndex,
-                            endRowIndex: rowIndex + 1,
-                            startColumnIndex: 5,  // คอลัมน์ F (เริ่มจาก 0)
-                            endColumnIndex: 6
-                        },
-                        rows: [
-                            {
-                                values: [
-                                    {
-                                        userEnteredValue: { stringValue: status }
-                                    }
-                                ]
-                            }
-                        ],
-                        fields: 'userEnteredValue'
-                    }
-                }
-            ]
-        };
-
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
-            method: 'POST',
+        // เริ่มต้นด้วยการดึงสถานะปัจจุบันจาก Google Sheets
+        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
+                'Authorization': `Bearer ${accessToken}`
+            }
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Payment status updated:', data);
+            const currentStatuses = data.values ? data.values[0] : [];  // ค่าปัจจุบันในคอลัมน์ F
+            const friendsStatuses = currentStatuses.length > 0 ? currentStatuses[0].split(', ') : [];  // แปลงค่ามาเป็นอาร์เรย์
+
+            // อัปเดตสถานะของเพื่อนคนที่เลือก
+            const friendIndex = event.target.getAttribute('data-friend-index');  // สมมติว่า index ของเพื่อนถูกเก็บไว้ใน data-friend-index
+            friendsStatuses[friendIndex] = status;  // เปลี่ยนสถานะของเพื่อนคนนี้
+
+            // สร้าง string ใหม่สำหรับสถานะ
+            const updatedStatuses = friendsStatuses.join(', ');
+
+            // อัปเดตสถานะใหม่ในคอลัมน์ F
+            const requestBody = {
+                range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // เลือกแถวที่ต้องการอัปเดต
+                values: [[updatedStatuses]]  // ค่าใหม่สำหรับสถานะการจ่ายเงิน
+            };
+
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Payment status updated:', data);
+            })
+            .catch(error => console.error('Error updating payment status:', error));
         })
-        .catch(error => console.error('Error updating payment status:', error));
+        .catch(error => console.error('Error fetching current payment statuses:', error));
     }
 });

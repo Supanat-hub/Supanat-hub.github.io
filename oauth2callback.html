@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OAuth 2.0 Callback</title>
 </head>
+
 <body>
     <h2>Processing authentication...</h2>
     <script>
@@ -13,20 +15,38 @@
         const authCode = urlParams.get('code');
 
         if (authCode) {
-            // ส่ง code ไปยังเซิร์ฟเวอร์หรือประมวลผล token ต่อไป
-            // ในที่นี้คุณสามารถส่ง `authCode` ไปยังเซิร์ฟเวอร์เพื่อแลกเป็น access token
+            fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    code: authCode,
+                    client_id: '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com',
+                    client_secret: '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',
+                    redirect_uri: 'https://supanat-hub.github.io/oauth2callback',
+                    grant_type: 'authorization_code'
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const accessToken = data.access_token;
 
-            // ตัวอย่างการแสดงผล authCode
-            console.log('Authorization Code:', authCode);
+                    // เก็บ accessToken ใน LocalStorage
+                    localStorage.setItem('accessToken', accessToken);
 
-            // คุณสามารถทำ redirect ไปหน้าหลักหรือแสดงข้อความแจ้งผู้ใช้
-            document.body.innerHTML = '<h3>Authentication successful!</h3>';
-            setTimeout(() => {
-                window.location.href = "https://supanat-hub.github.io/";
-            }, 2000);
+                    // Redirect ไปหน้าหลัก
+                    window.location.href = "https://supanat-hub.github.io/";
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.body.innerHTML = '<h3>Authentication failed. Unable to retrieve access token.</h3>';
+                });
         } else {
             document.body.innerHTML = '<h3>Authentication failed. No code found.</h3>';
         }
+
     </script>
 </body>
+
 </html>

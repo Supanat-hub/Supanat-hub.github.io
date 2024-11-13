@@ -14,25 +14,25 @@
         <div class="modal-content">
             <span class="close-button" id="closeModal">&times;</span>
             <h2>บันทึกค่าใช้จ่าย</h2>
-    
+
             <label for="expenseName">รายการ:</label>
             <input type="text" id="expenseName" placeholder="เช่น ค่าอาหาร">
-    
+
             <label for="amount">จำนวนเงิน:</label>
             <input type="number" id="amount" placeholder="จำนวนเงิน">
-    
+
             <label for="friends">เพื่อนที่ร่วมจ่าย:</label>
             <input type="text" id="friends" placeholder="ชื่อเพื่อน, คั่นด้วยลูกน้ำ">
-    
+
             <button class="submit-button" id="saveExpense">บันทึก</button>
         </div>
     </div>
-    
+
     <!-- end modal -->
 
     <div class="top-nav-bar">
         <button class="account-info">
-            <img src="/img/account.svg" alt="บัญชี" width="32" height="32">
+            <img id="profileImage" alt="บัญชี" width="32" height="32">
         </button>
     </div>
 
@@ -41,8 +41,22 @@
     <div class="bottom-nav">
         <button class="bottom-wide-button">+ add new list</button>
     </div>
-    
+
 </body>
 <script src="/src/js/main.js"></script>
+
+<script>
+    fetch('https://people.googleapis.com/v1/people/me?personFields=photos', {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            const profilePicUrl = data.photos[0].url;
+            document.getElementById("profileImage").src = profilePicUrl;
+        });
+
+</script>
 
 </html>

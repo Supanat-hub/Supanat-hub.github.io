@@ -20,20 +20,26 @@ if (accessToken) {
             userId = profileData.metadata && profileData.metadata.sources[0].id;
             console.log('User ID:', userId);
     
-            // Fetch user expenses
-            fetchUserExpenses(userId, accessToken);
+            // Fetch user expenses if userId exists
+            if (userId) {
+                fetchUserExpenses(userId, accessToken);
+            } else {
+                showLoginModal();
+            }
         })
         .catch(error => {
             console.error('Error fetching profile:', error);
             document.getElementById("profileImage").src = '/img/account.svg';
+            showLoginModal(); // Show login modal if there's an error or no profile data
         });    
 } else {
     console.log('No access token found. Using guest account.');
-
-    // Set profile image to default
     document.getElementById("profileImage").src = '/img/account.svg';
+    showLoginModal(); // Show login modal if access token is missing
+}
 
-    // Create and display the login modal
+// Function to show the login modal
+function showLoginModal() {
     const loginModal = document.createElement('div');
     loginModal.classList.add('modal');
     loginModal.style.display = 'flex';
@@ -49,17 +55,18 @@ if (accessToken) {
         </div>
     `;
     document.body.appendChild(loginModal);
-
-    // Function to redirect to the login page
-    function redirectToLogin() {
-        const clientId = '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com';
-        const redirectUri = 'https://supanat-hub.github.io/callback';
-        const scope = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile';
-
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
-        window.location.href = authUrl;
-    }
 }
+
+// Function to redirect to the login page
+function redirectToLogin() {
+    const clientId = '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com';
+    const redirectUri = 'https://supanat-hub.github.io/callback';
+    const scope = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile';
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    window.location.href = authUrl;
+}
+
 
 // Function to fetch expenses for the logged-in user
 function fetchUserExpenses(userId, accessToken) {

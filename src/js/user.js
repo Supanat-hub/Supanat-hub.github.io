@@ -65,13 +65,14 @@ if (accessToken) {
 // Function to fetch expenses for the logged-in user
 function fetchUserExpenses(userId, accessToken) {
     const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';
-    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1`, {
+    const sheetName = userId;  // ใช้ userId เป็นชื่อแท็บ
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}`, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
     })
     .then(response => response.json())
     .then(data => {
         const rows = data.values;
-        const userExpenses = rows.filter(row => row[0] === userId);
+        const userExpenses = rows || [];  // ถ้าไม่มีข้อมูลก็ใช้ array ว่าง
         console.log('User expenses:', userExpenses);
 
         // แสดงข้อมูล userExpenses ในหน้าเว็บ
@@ -142,14 +143,14 @@ document.getElementById('expenseList').addEventListener('change', function(event
 
         // สร้างข้อมูลใหม่ที่จะอัปเดตใน Google Sheets
         const requestBody = {
-            range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // แถวและคอลัมน์ที่ต้องการอัปเดต
+            range: `${userId}!F${parseInt(rowIndex) + 1}`,  // ใช้ชื่อแท็บที่เป็น userId
             values: [[updatedStatuses]]  // ส่งสถานะในรูปแบบข้อความเดียว
         };
 
         console.log('Request body:', JSON.stringify(requestBody));
 
         // ส่งข้อมูลไปยัง Google Sheets API
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!F${parseInt(rowIndex) + 1}:update`, {
+        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}:update`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,

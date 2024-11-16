@@ -1,159 +1,100 @@
-// Get the access token from LocalStorage
-const accessToken = localStorage.getItem('accessToken');
+// user.js - จัดการข้อมูลค่าใช้จ่ายและสถานะการจ่ายเงิน
 
-if (accessToken) {
-    // Fetch user profile including photo and user ID
-    fetch('https://people.googleapis.com/v1/people/me?personFields=photos,metadata', {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
-    })
-        .then(response => response.json())
-        .then(profileData => {
-            // ดึง URL ของรูปภาพโปรไฟล์
-            const profilePicUrl = profileData.photos && profileData.photos[0] ? profileData.photos[0].url : '/img/account.svg';
+const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8'; // Spreadsheet ID
+const SHEETS_API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`;
 
-            // แสดงรูปโปรไฟล์หรือรูปเริ่มต้น
-            document.getElementById("profileImage").src = profilePicUrl;
+// ดึงข้อมูลค่าใช้จ่ายของผู้ใช้
+async function fetchUserExpenses(userId, accessToken) {
+    const range = `${userId}!A1:Z1000`; // ดึงข้อมูลจากแท็บที่ตรงกับ user_id
 
-            // ดึง user_id และแสดงใน console log
-            const userId = profileData.metadata && profileData.metadata.sources[0].id;
-            console.log('User ID:', userId);
-
-            // เก็บ userId ใน LocalStorage
-            localStorage.setItem('userId', userId);
-
-            // เรียกใช้ฟังก์ชันเพื่อดึงรายการค่าใช้จ่ายของผู้ใช้
-            fetchUserExpenses(userId, accessToken);
-        })
-        .catch(error => {
-            console.error('Error fetching profile:', error);
-            // Use default image if error occurs
-            document.getElementById("profileImage").src = '/img/account.svg';
+    try {
+        const response = await fetch(`${SHEETS_API_URL}/values/${range}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
         });
-} else {
-    console.log('No access token found. Using guest account.');
 
-    // Set profile image to default
-    document.getElementById("profileImage").src = '/img/account.svg';
+        const data = await response.json();
+        if (!data.values) {
+            console.error('No data found for user.');
+            return [];
+        }
 
-    // Create and display the login modal
-    const loginModal = document.createElement('div');
-    loginModal.classList.add('modal');
-    loginModal.style.display = 'flex';
-    loginModal.innerHTML = `
-        <div class="login-modal-content">
-            <h2>ล็อกอินเพื่อเข้าถึง</h2>
-            <p>กรุณาล็อกอินก่อนเริ่มใช้งาน</p>
-            <center>
-                <button class="login-button" onclick="redirectToLogin()">
-                    <img src="/img/google.png" alt="Google Logo"> ล็อกอินด้วย Google
-                </button>
-            </center>
-        </div>
-    `;
-    document.body.appendChild(loginModal);
+        const expenses = data.values.map(row => ({
+            userId: row[0],
+            date: row[1],
+            expenseName: row[2],
+            amount: row[3],
+            friends: row[4].split(', '),
+            paymentStatus: row[5].split(', ')
+        }));
+        console.log('Fetched user expenses:', expenses);
 
-    // Function to redirect to the login page
-    function redirectToLogin() {
-        const clientId = '71156426726-oslpb03c1vcnepuaup0tsds8d7sopgm2.apps.googleusercontent.com';
-        const redirectUri = 'https://supanat-hub.github.io/callback';
-        const scope = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile';
-
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
-        window.location.href = authUrl;
+        // อัปเดต UI ด้วยข้อมูล
+        updateUI(expenses);
+        return expenses;
+    } catch (error) {
+        console.error('Error fetching user expenses:', error);
+        return [];
     }
 }
 
-// Function to fetch expenses for the logged-in user
-function fetchUserExpenses(userId, accessToken) {
-    const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';
-    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!A1:Z1000`, {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-    })
-    .then(response => response.json())
-    .then(data => {
-        const rows = data.values || [];
-        console.log('User expenses:', rows);
+// อัปเดตสถานะการจ่ายเงิน
+async function updatePaymentStatus(userId, expenseIndex, friendIndex, newStatus, accessToken) {
+    const range = `${userId}!F${expenseIndex + 1}`;
+    try {
+        const response = await fetch(`${SHEETS_API_URL}/values/${range}?valueInputOption=USER_ENTERED`, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                range,
+                values: [[newStatus]]
+            })
+        });
 
-        // แสดงข้อมูล userExpenses ในหน้าเว็บ
-        displayExpenses(rows);
-    })
-    .catch(error => console.error('Error fetching user expenses:', error));
+        const result = await response.json();
+        if (result.error) {
+            console.error('Error updating payment status:', result.error);
+        } else {
+            console.log('Payment status updated:', result);
+        }
+    } catch (error) {
+        console.error('Error updating payment status:', error);
+    }
 }
 
-// Function to display expenses on the web page
-function displayExpenses(expenses) {
-    const expenseList = document.getElementById("expenseList");
-    expenseList.innerHTML = ''; // ล้างรายการก่อนแสดงใหม่
+// อัปเดต UI
+function updateUI(expenses) {
+    const expenseContainer = document.getElementById('expenseList');
+    expenseContainer.innerHTML = '';
 
-    expenses.forEach((expense, index) => {
-        const expenseItem = document.createElement("div");
-        expenseItem.className = "expense-item";
+    expenses.forEach((expense, expenseIndex) => {
+        const expenseItem = document.createElement('div');
+        expenseItem.classList.add('expense-item');
         expenseItem.innerHTML = `
-            <h3>${expense[2]}</h3>
-            <p>จำนวนเงิน: ${expense[3]} บาท</p>
-            <h4>สถานะการจ่ายเงิน:</h4>
-            <ul>
-                ${expense[4].split(', ').map((status, idx) => `
-                    <li>
-                        <span>${status}</span>
-                        <select class="payment-status" data-row="${index}">
-                            <option value="not_paid" ${status === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
-                            <option value="paid" ${status === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
-                        </select>
-                    </li>
-                `).join('')}
-            </ul>
+            <h3>${expense.expenseName} - ${expense.amount}฿</h3>
+            <p>Friends: ${expense.friends.join(', ')}</p>
+            <p>Status: ${expense.paymentStatus.join(', ')}</p>
         `;
-        expenseList.appendChild(expenseItem);
+
+        expense.friends.forEach((friend, friendIndex) => {
+            const statusButton = document.createElement('button');
+            statusButton.textContent = expense.paymentStatus[friendIndex];
+            statusButton.addEventListener('click', () => {
+                const newStatus = expense.paymentStatus[friendIndex] === 'not_paid' ? 'paid' : 'not_paid';
+                expense.paymentStatus[friendIndex] = newStatus;
+
+                // อัปเดตสถานะใน Google Sheets
+                updatePaymentStatus(userId, expenseIndex, friendIndex, expense.paymentStatus.join(', '), accessToken);
+
+                // อัปเดต UI
+                updateUI(expenses);
+            });
+
+            expenseItem.appendChild(statusButton);
+        });
+
+        expenseContainer.appendChild(expenseItem);
     });
 }
-
-// Function to save updated statuses to user's tab
-function saveDataToUserTab(userId, updatedStatuses) {
-    const accessToken = localStorage.getItem('accessToken');
-    const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';
-
-    if (!accessToken) {
-        console.error('Access token not found.');
-        return;
-    }
-
-    // Save data to the user's tab
-    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!A1:append`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            range: `${userId}!A1`,
-            values: [[new Date().toLocaleString(), ...updatedStatuses]],
-            valueInputOption: 'RAW'
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Data saved to user sheet:', data);
-    })
-    .catch(error => console.error('Error updating user sheet:', error));
-}
-
-// Handle payment status change
-document.getElementById('expenseList').addEventListener('change', function(event) {
-    if (event.target.classList.contains('payment-status')) {
-        const status = event.target.value;
-        const rowIndex = event.target.getAttribute('data-row');
-
-        const expenseItems = document.querySelectorAll('.expense-item');
-        const expenseItem = expenseItems[rowIndex];
-        const friends = expenseItem.querySelectorAll('ul li span');
-        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);
-
-        console.log('Updated statuses:', friendsStatuses);
-
-        const userId = localStorage.getItem('userId');
-        saveDataToUserTab(userId, friendsStatuses);
-    }
-});

@@ -94,7 +94,7 @@ function displayExpenses(expenses) {
             <p>จำนวนเงิน: ${expense[3]} บาท</p>
             <h4>สถานะการจ่ายเงิน:</h4>
             <ul>
-                ${expense[4].split(', ').map((status, idx) => `
+                ${expense[5].split(', ').map((status, idx) => `
                     <li>
                         <span>${status}</span>
                         <select class="payment-status" data-row="${index}">

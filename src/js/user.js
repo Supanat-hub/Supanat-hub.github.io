@@ -1,5 +1,6 @@
 // Get the access token from LocalStorage
 const accessToken = localStorage.getItem('accessToken');
+let userId; 
 
 if (accessToken) {
     // Fetch user profile including photo and user ID
@@ -10,24 +11,22 @@ if (accessToken) {
     })
         .then(response => response.json())
         .then(profileData => {
-            // ดึง URL ของรูปภาพโปรไฟล์
             const profilePicUrl = profileData.photos && profileData.photos[0] ? profileData.photos[0].url : '/img/account.svg';
-
-            // แสดงรูปโปรไฟล์หรือรูปเริ่มต้น
+    
+            // Set profile image
             document.getElementById("profileImage").src = profilePicUrl;
-
-            // ดึง user_id และแสดงใน console log
-            const userId = profileData.metadata && profileData.metadata.sources[0].id;
+    
+            // Assign userId to global variable
+            userId = profileData.metadata && profileData.metadata.sources[0].id;
             console.log('User ID:', userId);
-
-            // เรียกใช้ฟังก์ชันเพื่อดึงรายการค่าใช้จ่ายของผู้ใช้
+    
+            // Fetch user expenses
             fetchUserExpenses(userId, accessToken);
         })
         .catch(error => {
             console.error('Error fetching profile:', error);
-            // Use default image if error occurs
             document.getElementById("profileImage").src = '/img/account.svg';
-        });
+        });    
 } else {
     console.log('No access token found. Using guest account.');
 

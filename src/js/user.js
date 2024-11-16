@@ -81,12 +81,15 @@ function fetchUserExpenses(userId, accessToken) {
     .catch(error => console.error('Error fetching user expenses:', error));
 }
 
-// Function to display expenses on the web page
 function displayExpenses(expenses) {
     const expenseList = document.getElementById("expenseList");
     expenseList.innerHTML = '';  // ล้างรายการก่อนแสดงใหม่
 
     expenses.forEach((expense, index) => {
+        // แยกชื่อคนและสถานะจากคอลัมน์ F และ E
+        const names = expense[4].split(', ');  // ชื่อคนที่คั่นด้วย ,
+        const statuses = expense[5].split(', ');  // สถานะการชำระเงินที่คั่นด้วย ,
+
         const expenseItem = document.createElement("div");
         expenseItem.className = "expense-item";
         expenseItem.innerHTML = `
@@ -94,12 +97,12 @@ function displayExpenses(expenses) {
             <p>จำนวนเงิน: ${expense[3]} บาท</p>
             <h4>สถานะการจ่ายเงิน:</h4>
             <ul>
-                ${expense[5].split(', ').map((status, idx) => `
+                ${names.map((name, idx) => `
                     <li>
-                        <span>${status}</span>
+                        <span>${name}</span>  <!-- แสดงชื่อคน -->
                         <select class="payment-status" data-row="${index}">
-                            <option value="not_paid" ${status === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
-                            <option value="paid" ${status === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
+                            <option value="not_paid" ${statuses[idx] === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
+                            <option value="paid" ${statuses[idx] === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
                         </select>
                     </li>
                 `).join('')}

@@ -70,9 +70,10 @@ function fetchUserExpenses(userId, accessToken) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Fetched data from Google Sheets:', data); // Log the fetched data
         const rows = data.values;
         const userExpenses = rows || [];  // ถ้าไม่มีข้อมูลก็ใช้ array ว่าง
-        console.log('User expenses:', userExpenses);
+        console.log('User  expenses:', userExpenses); // Log user expenses
 
         // แสดงข้อมูล userExpenses ในหน้าเว็บ
         displayExpenses(userExpenses);

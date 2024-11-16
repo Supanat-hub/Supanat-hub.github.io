@@ -111,6 +111,11 @@ function displayExpenses(expenses) {
 // ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
 document.getElementById('expenseList').addEventListener('change', function(event) {
     if (event.target.classList.contains('payment-status')) {
+        if (!userId) {
+            console.error('User ID is not defined.');
+            return;
+        }
+
         const status = event.target.value;  // ค่าใหม่ที่เลือก
         const rowIndex = event.target.getAttribute('data-row');  // ดัชนีของแถวที่ถูกเลือก
 
@@ -126,29 +131,17 @@ document.getElementById('expenseList').addEventListener('change', function(event
         const friends = expenseItem.querySelectorAll('ul li span');
         const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);  // ดึงสถานะปัจจุบัน
 
-        // log สถานะก่อนอัปเดต
-        console.log('Current statuses before update:', friendsStatuses);
-
         // อัปเดตสถานะของเพื่อนคนที่เลือก
         const friendIndex = Array.from(friends).findIndex(friend => friend.textContent === event.target.previousElementSibling.textContent);
         friendsStatuses[friendIndex] = status;  // เปลี่ยนสถานะของเพื่อนคนนี้
 
-        // log สถานะหลังการอัปเดต
-        console.log('Updated statuses:', friendsStatuses);
-
-        // สร้าง string ใหม่สำหรับสถานะ
         const updatedStatuses = friendsStatuses.join(', ');  // รวมสถานะใหม่ทั้งหมด
-        console.log('Updated statuses to send:', updatedStatuses);
 
-        // สร้างข้อมูลใหม่ที่จะอัปเดตใน Google Sheets
         const requestBody = {
-            range: `${userId}!F${parseInt(rowIndex) + 1}`,  // ใช้ชื่อแท็บที่เป็น userId
+            range: `${userId}!F${parseInt(rowIndex) + 1}`,  // ใช้ userId เป็นชื่อ tap
             values: [[updatedStatuses]]  // ส่งสถานะในรูปแบบข้อความเดียว
         };
 
-        console.log('Request body:', JSON.stringify(requestBody));
-
-        // ส่งข้อมูลไปยัง Google Sheets API
         fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}:update`, {
             method: 'PUT',
             headers: {

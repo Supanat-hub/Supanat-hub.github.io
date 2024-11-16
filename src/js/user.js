@@ -89,6 +89,8 @@ function displayExpenses(expenses) {
         // แยกชื่อคนและสถานะจากคอลัมน์ F และ E
         const names = expense[4].split(', ');  // ชื่อคนที่คั่นด้วย ,
         const statuses = expense[5].split(', ');  // สถานะการชำระเงินที่คั่นด้วย ,
+        console.log("Names : ", names);
+        console.log("Statuses : ", statuses);
 
         const expenseItem = document.createElement("div");
         expenseItem.className = "expense-item";

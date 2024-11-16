@@ -142,7 +142,7 @@ document.getElementById('expenseList').addEventListener('change', function(event
             values: [[updatedStatuses]] // ต้องเป็น array ซ้อน
         };
         
-        const requestUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}:update?valueInputOption=RAW`;
+        const requestUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}?valueInputOption=RAW`;
         
         // console.log('Request Body:', requestBody);
         console.log('Request URL:', requestUrl);

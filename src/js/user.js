@@ -20,6 +20,9 @@ if (accessToken) {
             const userId = profileData.metadata && profileData.metadata.sources[0].id;
             console.log('User ID:', userId);
 
+            // เก็บ userId ใน LocalStorage
+            localStorage.setItem('userId', userId);
+
             // เรียกใช้ฟังก์ชันเพื่อดึงรายการค่าใช้จ่ายของผู้ใช้
             fetchUserExpenses(userId, accessToken);
         })
@@ -64,18 +67,17 @@ if (accessToken) {
 
 // Function to fetch expenses for the logged-in user
 function fetchUserExpenses(userId, accessToken) {
-    const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';  // <-- ใส่ ID ของ Google Sheets
-    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1`, {
+    const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!A1:Z1000`, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
     })
     .then(response => response.json())
     .then(data => {
-        const rows = data.values;
-        const userExpenses = rows.filter(row => row[0] === userId);
-        console.log('User expenses:', userExpenses);
+        const rows = data.values || [];
+        console.log('User expenses:', rows);
 
         // แสดงข้อมูล userExpenses ในหน้าเว็บ
-        displayExpenses(userExpenses);
+        displayExpenses(rows);
     })
     .catch(error => console.error('Error fetching user expenses:', error));
 }
@@ -83,7 +85,7 @@ function fetchUserExpenses(userId, accessToken) {
 // Function to display expenses on the web page
 function displayExpenses(expenses) {
     const expenseList = document.getElementById("expenseList");
-    expenseList.innerHTML = '';  // ล้างรายการก่อนแสดงใหม่
+    expenseList.innerHTML = ''; // ล้างรายการก่อนแสดงใหม่
 
     expenses.forEach((expense, index) => {
         const expenseItem = document.createElement("div");
@@ -108,61 +110,50 @@ function displayExpenses(expenses) {
     });
 }
 
-// ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
+// Function to save updated statuses to user's tab
+function saveDataToUserTab(userId, updatedStatuses) {
+    const accessToken = localStorage.getItem('accessToken');
+    const spreadsheetId = '1iEr8ktcz2B3yR37Eisc2m7vWTtchrBuXBJ1ypyrSNf8';
+
+    if (!accessToken) {
+        console.error('Access token not found.');
+        return;
+    }
+
+    // Save data to the user's tab
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!A1:append`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            range: `${userId}!A1`,
+            values: [[new Date().toLocaleString(), ...updatedStatuses]],
+            valueInputOption: 'RAW'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Data saved to user sheet:', data);
+    })
+    .catch(error => console.error('Error updating user sheet:', error));
+}
+
+// Handle payment status change
 document.getElementById('expenseList').addEventListener('change', function(event) {
     if (event.target.classList.contains('payment-status')) {
-        const status = event.target.value;  // ค่าใหม่ที่เลือก
-        const rowIndex = event.target.getAttribute('data-row');  // ดัชนีของแถวที่ถูกเลือก
+        const status = event.target.value;
+        const rowIndex = event.target.getAttribute('data-row');
 
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            console.error('Access token not found.');
-            return;
-        }
-
-        // ดึงสถานะเพื่อนจากที่เก็บใน UI
         const expenseItems = document.querySelectorAll('.expense-item');
-        const expenseItem = expenseItems[rowIndex];  // เลือกการ์ดที่ถูกแก้ไข
+        const expenseItem = expenseItems[rowIndex];
         const friends = expenseItem.querySelectorAll('ul li span');
-        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);  // ดึงสถานะปัจจุบัน
+        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);
 
-        // log สถานะก่อนอัปเดต
-        console.log('Current statuses before update:', friendsStatuses);
-
-        // อัปเดตสถานะของเพื่อนคนที่เลือก
-        const friendIndex = Array.from(friends).findIndex(friend => friend.textContent === event.target.previousElementSibling.textContent);
-        friendsStatuses[friendIndex] = status;  // เปลี่ยนสถานะของเพื่อนคนนี้
-
-        // log สถานะหลังการอัปเดต
         console.log('Updated statuses:', friendsStatuses);
 
-        // สร้าง string ใหม่สำหรับสถานะ
-        const updatedStatuses = friendsStatuses.join(', ');  // รวมสถานะใหม่ทั้งหมด
-        console.log('Updated statuses to send:', updatedStatuses);
-
-        // สร้างข้อมูลใหม่ที่จะอัปเดตใน Google Sheets
-        const requestBody = {
-            range: `Sheet1!F${parseInt(rowIndex) + 1}`,  // แถวและคอลัมน์ที่ต้องการอัปเดต
-            values: [[updatedStatuses]]  // ส่งสถานะในรูปแบบข้อความเดียว
-        };
-
-        console.log('Request body:', JSON.stringify(requestBody));
-
-        // ส่งข้อมูลไปยัง Google Sheets API
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!F${parseInt(rowIndex) + 1}:update`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)  // ส่งข้อมูลตามที่เตรียมไว้
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Payment status updated:', data);
-        })
-        .catch(error => {
-            console.error('Error updating payment status:', error);
-        });
+        const userId = localStorage.getItem('userId');
+        saveDataToUserTab(userId, friendsStatuses);
     }
 });

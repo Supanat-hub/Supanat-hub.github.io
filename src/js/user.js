@@ -90,7 +90,6 @@ function fetchUserExpenses(userId, accessToken) {
 
 function displayExpenses(expenses) {
     const expenseList = document.getElementById("expenseList");
-    const fragment = document.createDocumentFragment();
     expenseList.innerHTML = '';  // ล้างรายการก่อนแสดงใหม่
 
     expenses.forEach((expense, index) => {
@@ -116,9 +115,10 @@ function displayExpenses(expenses) {
                 `).join('')}
             </ul>
         `;
-        fragment.appendChild(expenseItem);
+        expenseList.insertBefore(expenseItem, expenseList.firstChild);
+        console.log("Added : ", expense[2])
     });
-    expenseList.insertBefore(fragment, expenseList.firstChild);
+    
 }
 
 // ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน

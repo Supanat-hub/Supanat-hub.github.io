@@ -138,24 +138,22 @@ document.getElementById('expenseList').addEventListener('change', function(event
         const updatedStatuses = friendsStatuses.join(', ');  // รวมสถานะใหม่ทั้งหมด
 
         const requestBody = {
-            range: `${userId}!F${parseInt(rowIndex) + 1}`, // Example: "123456!F1"
-            values: [[updatedStatuses]]
+            range: `${userId}!F${parseInt(rowIndex) + 1}`,
+            values: [[updatedStatuses]] // ต้องเป็น array ซ้อน
         };
-
-        console.log('Request Body:', requestBody);
-        console.log('UpdatedStatuses:', updatedStatuses);
-        console.log('Request Range:', `${userId}!F${parseInt(rowIndex) + 1}`);
         
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}:update`, {
+        const requestUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}:update?valueInputOption=RAW`;
+        
+        console.log('Request Body:', requestBody);
+        console.log('Request URL:', requestUrl);
+        
+        fetch(requestUrl, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                range: `${userId}!F${parseInt(rowIndex) + 1}`, // ชื่อแท็บ + คอลัมน์ + แถว
-                values: [[updatedStatuses]]
-            })
+            body: JSON.stringify(requestBody)
         })
         .then(response => response.json())
         .then(data => {

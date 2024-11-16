@@ -138,11 +138,12 @@ document.getElementById('expenseList').addEventListener('change', function(event
         const updatedStatuses = friendsStatuses.join(', ');  // รวมสถานะใหม่ทั้งหมด
 
         const requestBody = {
-            range: `${userId}!F${parseInt(rowIndex) + 1}`, // ช่วงที่ต้องการอัปเดต
-            values: [[updatedStatuses]] // ต้องแน่ใจว่าเป็นอาร์เรย์ซ้อน
+            range: `${userId}!F${parseInt(rowIndex) + 1}`, // Example: "123456!F1"
+            values: [[updatedStatuses]]
         };
 
         console.log('Request Body:', requestBody);
+        console.log('UpdatedStatuses:', updatedStatuses);
         console.log('Request Range:', `${userId}!F${parseInt(rowIndex) + 1}`);
         
         fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}:update`, {
@@ -151,7 +152,10 @@ document.getElementById('expenseList').addEventListener('change', function(event
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+                range: `${userId}!F${parseInt(rowIndex) + 1}`, // ชื่อแท็บ + คอลัมน์ + แถว
+                values: [[updatedStatuses]]
+            })
         })
         .then(response => response.json())
         .then(data => {
@@ -160,5 +164,6 @@ document.getElementById('expenseList').addEventListener('change', function(event
         .catch(error => {
             console.error('Error updating payment status:', error);
         });
+        
     }
 });

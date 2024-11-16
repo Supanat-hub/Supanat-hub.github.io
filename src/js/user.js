@@ -138,17 +138,20 @@ document.getElementById('expenseList').addEventListener('change', function(event
         const updatedStatuses = friendsStatuses.join(', ');  // รวมสถานะใหม่ทั้งหมด
 
         const requestBody = {
-            range: `${userId}!F${parseInt(rowIndex) + 1}`,  // ใช้ userId เป็นชื่อ tap
-            values: [[updatedStatuses]]  // ส่งสถานะในรูปแบบข้อความเดียว
+            range: `${userId}!F${parseInt(rowIndex) + 1}`, // ช่วงที่ต้องการอัปเดต
+            values: [[updatedStatuses]] // ต้องแน่ใจว่าเป็นอาร์เรย์ซ้อน
         };
 
+        console.log('Request Body:', requestBody);
+        console.log('Request Range:', `${userId}!F${parseInt(rowIndex) + 1}`);
+        
         fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}:update`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestBody)  // ส่งข้อมูลตามที่เตรียมไว้
+            body: JSON.stringify(requestBody)
         })
         .then(response => response.json())
         .then(data => {

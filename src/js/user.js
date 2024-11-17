@@ -91,7 +91,8 @@ function displayExpenses(expenses) {
     const expenseList = document.getElementById("expenseList");
     expenseList.innerHTML = '';  // ล้างรายการก่อนแสดงใหม่
 
-    expenses.forEach((expense, index) => {
+    // เรียงลำดับรายการจากล่าสุดก่อน
+    expenses.reverse().forEach((expense, index) => {
         // แยกชื่อคนและสถานะจากคอลัมน์ F และ E
         const names = expense[4].split(', ');  // ชื่อคนที่คั่นด้วย ,
         const statuses = expense[5].split(', ');  // สถานะการชำระเงินที่คั่นด้วย ,
@@ -114,11 +115,12 @@ function displayExpenses(expenses) {
                 `).join('')}
             </ul>
         `;
+
+        // เพิ่มรายการใหม่ด้านบน
         expenseList.insertBefore(expenseItem, expenseList.firstChild);
-        // expenseList.appendChild(expenseItem);
     });
-    
 }
+
 
 // ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
 document.getElementById('expenseList').addEventListener('change', function(event) {

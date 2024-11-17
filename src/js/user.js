@@ -145,8 +145,10 @@ document.getElementById('expenseList').addEventListener('change', function(event
         const expenseItem = expenseItems[rowIndex]; // เลือกการ์ดที่ถูกแก้ไข
         const friends = expenseItem.querySelectorAll('ul li span');
         
-        // ตรวจสอบว่าค่าที่เลือกอยู่ในรายการของเพื่อนคนใด
-        const friendIndex = Array.from(friends).findIndex(friend => friend === event.target.closest('li').querySelector('span'));
+        // หาตำแหน่งของ friend ในรายการที่เลือก
+        const friendIndex = Array.from(friends).findIndex(friend => {
+            return friend === event.target.closest('li').querySelector('span'); // ใช้ closest กับ span
+        });
 
         if (friendIndex === -1) {
             console.error('Friend not found for status update.');

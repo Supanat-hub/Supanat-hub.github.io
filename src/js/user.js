@@ -115,8 +115,8 @@ function displayExpenses(expenses) {
                 `).join('')}
             </ul>
         `;
-        // expenseList.insertBefore(expenseItem, expenseList.firstChild);
-        expenseList.appendChild(expenseItem);
+        expenseList.insertBefore(expenseItem, expenseList.firstChild);
+        // expenseList.appendChild(expenseItem);
         console.log("Added : ", expense[2])
     });
     

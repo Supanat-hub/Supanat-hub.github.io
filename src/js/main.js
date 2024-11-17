@@ -76,11 +76,35 @@ window.addEventListener("click", (event) => {
     }
 });
 
-// บันทึกข้อมูลค่าใช้จ่ายลงในแท็บของผู้ใช้
 saveExpenseButton.addEventListener("click", async () => {
     const expenseName = document.getElementById("expenseName").value;
     const amount = document.getElementById("amount").value;
-    const friends = document.getElementById("friends").value.split(",").map(friend => friend.trim());
+    const friendsInput = document.getElementById("friends");
+    const friends = friendsInput.value.split(",").map(friend => friend.trim());
+
+    // ตรวจสอบว่ามีการเพิ่มชื่อเพื่อนอย่างน้อย 1 ชื่อ
+    if (friends.length === 0 || friends[0] === "") {
+        // ทำให้ช่องเพื่อนเป็นสีแดงและแสดงข้อความแจ้งเตือน
+        friendsInput.style.borderColor = "red";
+        
+        let errorMessage = document.getElementById("friendsErrorMessage");
+        if (!errorMessage) {
+            errorMessage = document.createElement("div");
+            errorMessage.id = "friendsErrorMessage";
+            errorMessage.style.color = "red";
+            errorMessage.style.fontSize = "12px";
+            errorMessage.innerText = "กรุณาเพิ่มชื่อเพื่อนอย่างน้อย 1 คน";
+            friendsInput.parentNode.appendChild(errorMessage);
+        }
+        return;
+    }
+
+    // ลบข้อความแจ้งเตือนและรีเซ็ตสีของช่องเพื่อนเมื่อกรอกถูกต้อง
+    const errorMessage = document.getElementById("friendsErrorMessage");
+    if (errorMessage) {
+        errorMessage.remove();
+    }
+    friendsInput.style.borderColor = "";
 
     // ตรวจสอบ accessToken ใน LocalStorage
     const accessToken = localStorage.getItem('accessToken');

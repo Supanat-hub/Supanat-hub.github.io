@@ -106,7 +106,7 @@ function displayExpenses(expenses) {
             <ul>
                 ${names.map((name, idx) => `
                     <li>
-                        <span data-index="${idx}">${name}</span>  <!-- เพิ่ม data-index -->
+                        <span>${name}</span>  <!-- เพิ่ม data-index -->
                         <select class="payment-status" data-row="${index}">
                             <option value="not_paid" ${statuses[idx] === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
                             <option value="paid" ${statuses[idx] === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
@@ -145,8 +145,8 @@ document.getElementById('expenseList').addEventListener('change', function(event
         const expenseItem = expenseItems[rowIndex]; // เลือกการ์ดที่ถูกแก้ไข
         const friends = expenseItem.querySelectorAll('ul li span');
         
-        // ค้นหาตำแหน่งของเพื่อนจาก data-index
-        const friendIndex = Array.from(friends).findIndex(friend => friend === event.target.previousElementSibling.previousElementSibling);
+        // ตรวจสอบว่าค่าที่เลือกอยู่ในรายการของเพื่อนคนใด
+        const friendIndex = Array.from(friends).findIndex(friend => friend === event.target.closest('li').querySelector('span'));
 
         if (friendIndex === -1) {
             console.error('Friend not found for status update.');
@@ -154,10 +154,6 @@ document.getElementById('expenseList').addEventListener('change', function(event
         }
 
         // อัปเดตสถานะของเพื่อนคนที่เลือก
-        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);
-        friendsStatuses[friendIndex] = status;
-
-        // รวมสถานะใหม่ทั้งหมด
         const updatedStatuses = Array.from(friends).map((friend, index) => {
             return index === friendIndex ? status : friend.nextElementSibling.value;
         }).join(', ');
@@ -187,4 +183,3 @@ document.getElementById('expenseList').addEventListener('change', function(event
         });
     }
 });
-

@@ -33,7 +33,7 @@ if (accessToken) {
             showLoginModal(); // Show login modal if there's an error or no profile data
         });    
 } else {
-    console.log('No access token found. Using guest account.');
+    console.log('No access token found. Using guest profile img.');
     document.getElementById("profileImage").src = '/img/account.svg';
     showLoginModal(); // Show login modal if access token is missing
 }
@@ -77,10 +77,9 @@ function fetchUserExpenses(userId, accessToken) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Fetched data from Google Sheets:', data); // Log the fetched data
+        console.log('Fetched data from Google Sheets'); // Log the fetched data
         const rows = data.values;
         const userExpenses = rows || [];  // ถ้าไม่มีข้อมูลก็ใช้ array ว่าง
-        console.log('User  expenses:', userExpenses); // Log user expenses
 
         // แสดงข้อมูล userExpenses ในหน้าเว็บ
         displayExpenses(userExpenses);
@@ -117,7 +116,6 @@ function displayExpenses(expenses) {
         `;
         expenseList.insertBefore(expenseItem, expenseList.firstChild);
         // expenseList.appendChild(expenseItem);
-        console.log("Added : ", expense[2])
     });
     
 }
@@ -169,8 +167,8 @@ document.getElementById('expenseList').addEventListener('change', function(event
         const requestUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}?valueInputOption=RAW`;
 
         // Debugging logs
-        console.log('Request Body:', requestBody);
-        console.log('Request URL:', requestUrl);
+        // console.log('Request Body:', requestBody);
+        // console.log('Request URL:', requestUrl);
 
         // ส่งคำขออัปเดตไปยัง Google Sheets API
         fetch(requestUrl, {

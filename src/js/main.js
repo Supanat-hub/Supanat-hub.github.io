@@ -117,7 +117,7 @@ saveExpenseButton.addEventListener("click", async () => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Expense added to Google Sheets:', data);
+        console.log('Expense added to Google Sheets:');
 
         // เรียกฟังก์ชันใน user.js เพื่อนำข้อมูลค่าใช้จ่ายที่อัปเดตมาแสดงใน UI
         fetchUserExpenses(userId, accessToken);

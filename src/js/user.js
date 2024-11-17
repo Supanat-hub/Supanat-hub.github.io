@@ -92,7 +92,7 @@ function displayExpenses(expenses) {
     expenseList.innerHTML = '';  // ล้างรายการก่อนแสดงใหม่
 
     // เรียงลำดับรายการจากล่าสุดก่อน
-    expenses.reverse().forEach((expense, index) => {
+    expenses.forEach((expense, index) => {
         // แยกชื่อคนและสถานะจากคอลัมน์ F และ E
         const names = expense[4].split(', ');  // ชื่อคนที่คั่นด้วย ,
         const statuses = expense[5].split(', ');  // สถานะการชำระเงินที่คั่นด้วย ,

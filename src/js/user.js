@@ -106,7 +106,7 @@ function displayExpenses(expenses) {
             <ul>
                 ${names.map((name, idx) => `
                     <li>
-                        <span>${name}</span>  <!-- แสดงชื่อคน -->
+                        <span data-index="${idx}">${name}</span>  <!-- เพิ่ม data-index -->
                         <select class="payment-status" data-row="${index}">
                             <option value="not_paid" ${statuses[idx] === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
                             <option value="paid" ${statuses[idx] === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
@@ -145,13 +145,8 @@ document.getElementById('expenseList').addEventListener('change', function(event
         const expenseItem = expenseItems[rowIndex]; // เลือกการ์ดที่ถูกแก้ไข
         const friends = expenseItem.querySelectorAll('ul li span');
         
-        // ตรวจสอบและแก้ไขสถานะเพื่อน
-        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);
-        const friendIndex = Array.from(friends).findIndex((friend, idx) => {
-            // หาตำแหน่งของเพื่อนโดยใช้ค่าจาก previousElementSibling
-            return friend === event.target.previousElementSibling;
-        });
-        console.log("Get Friends payment stage.")
+        // ค้นหาตำแหน่งของเพื่อนจาก data-index
+        const friendIndex = Array.from(friends).findIndex(friend => friend === event.target.previousElementSibling.previousElementSibling);
 
         if (friendIndex === -1) {
             console.error('Friend not found for status update.');
@@ -159,6 +154,7 @@ document.getElementById('expenseList').addEventListener('change', function(event
         }
 
         // อัปเดตสถานะของเพื่อนคนที่เลือก
+        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);
         friendsStatuses[friendIndex] = status;
 
         // รวมสถานะใหม่ทั้งหมด
@@ -172,10 +168,6 @@ document.getElementById('expenseList').addEventListener('change', function(event
         };
 
         const requestUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}?valueInputOption=RAW`;
-
-        // Debugging logs
-        // console.log('Request Body:', requestBody);
-        // console.log('Request URL:', requestUrl);
 
         // ส่งคำขออัปเดตไปยัง Google Sheets API
         fetch(requestUrl, {
@@ -195,3 +187,4 @@ document.getElementById('expenseList').addEventListener('change', function(event
         });
     }
 });
+

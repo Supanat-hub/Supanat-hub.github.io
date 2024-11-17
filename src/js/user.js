@@ -115,7 +115,8 @@ function displayExpenses(expenses) {
                 `).join('')}
             </ul>
         `;
-        expenseList.insertBefore(expenseItem, expenseList.firstChild);
+        // expenseList.insertBefore(expenseItem, expenseList.firstChild);
+        expenseList.appendChild(expenseItem);
         console.log("Added : ", expense[2])
     });
     
@@ -129,8 +130,8 @@ document.getElementById('expenseList').addEventListener('change', function(event
             return;
         }
 
-        const status = event.target.value;  // ค่าใหม่ที่เลือก
-        const rowIndex = event.target.getAttribute('data-row');  // ดัชนีของแถวที่ถูกเลือก
+        const status = event.target.value; // ค่าใหม่ที่เลือก
+        const rowIndex = event.target.getAttribute('data-row'); // ดัชนีของแถวที่ถูกเลือก
 
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
@@ -140,26 +141,38 @@ document.getElementById('expenseList').addEventListener('change', function(event
 
         // ดึงสถานะเพื่อนจากที่เก็บใน UI
         const expenseItems = document.querySelectorAll('.expense-item');
-        const expenseItem = expenseItems[rowIndex];  // เลือกการ์ดที่ถูกแก้ไข
+        const expenseItem = expenseItems[rowIndex]; // เลือกการ์ดที่ถูกแก้ไข
         const friends = expenseItem.querySelectorAll('ul li span');
-        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);  // ดึงสถานะปัจจุบัน
+        
+        // ตรวจสอบและแก้ไขสถานะเพื่อน
+        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);
+        const friendIndex = Array.from(friends).findIndex(friend => friend.isSameNode(event.target.previousElementSibling));
+        
+        if (friendIndex === -1) {
+            console.error('Friend not found for status update.');
+            return;
+        }
 
         // อัปเดตสถานะของเพื่อนคนที่เลือก
-        const friendIndex = Array.from(friends).findIndex(friend => friend.textContent === event.target.previousElementSibling.textContent);
-        friendsStatuses[friendIndex] = status;  // เปลี่ยนสถานะของเพื่อนคนนี้
+        friendsStatuses[friendIndex] = status;
 
-        const updatedStatuses = friendsStatuses.join(', ');  // รวมสถานะใหม่ทั้งหมด
+        // รวมสถานะใหม่ทั้งหมด
+        const updatedStatuses = Array.from(friends).map((friend, index) => {
+            return index === friendIndex ? status : friend.nextElementSibling.value;
+        }).join(', ');
 
         const requestBody = {
             range: `${userId}!F${parseInt(rowIndex) + 1}`,
             values: [[updatedStatuses]] // ต้องเป็น array ซ้อน
         };
-        
+
         const requestUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}?valueInputOption=RAW`;
-        
-        // console.log('Request Body:', requestBody);
+
+        // Debugging logs
+        console.log('Request Body:', requestBody);
         console.log('Request URL:', requestUrl);
-        
+
+        // ส่งคำขออัปเดตไปยัง Google Sheets API
         fetch(requestUrl, {
             method: 'PUT',
             headers: {
@@ -175,6 +188,5 @@ document.getElementById('expenseList').addEventListener('change', function(event
         .catch(error => {
             console.error('Error updating payment status:', error);
         });
-        
     }
 });

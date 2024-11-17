@@ -147,8 +147,12 @@ document.getElementById('expenseList').addEventListener('change', function(event
         
         // ตรวจสอบและแก้ไขสถานะเพื่อน
         const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);
-        const friendIndex = Array.from(friends).findIndex(friend => friend.isSameNode(event.target.previousElementSibling));
-        
+        const friendIndex = Array.from(friends).findIndex((friend, idx) => {
+            // หาตำแหน่งของเพื่อนโดยใช้ค่าจาก previousElementSibling
+            return friend === event.target.previousElementSibling;
+        });
+        console.log("Get Friends payment stage.")
+
         if (friendIndex === -1) {
             console.error('Friend not found for status update.');
             return;

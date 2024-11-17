@@ -118,6 +118,7 @@ function displayExpenses(expenses) {
 
         // เพิ่มรายการใหม่ด้านบน
         expenseList.insertBefore(expenseItem, expenseList.firstChild);
+        console.log("added : ", expense[2])
     });
 }
 

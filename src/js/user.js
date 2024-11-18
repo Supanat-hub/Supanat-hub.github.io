@@ -99,28 +99,32 @@ function displayExpenses(expenses) {
 
         const expenseItem = document.createElement("div");
         expenseItem.className = "expense-item";
+        expenseItem.setAttribute("data-row", index); // เพิ่ม data-row ให้แต่ละรายการ
+
+        // สร้าง HTML สำหรับเพื่อนและสถานะ
+        const friendsHTML = names.map((name, idx) => `
+            <li>
+                <span data-friend="${name.trim()}">${name.trim()}</span>
+                <select class="payment-status" data-row="${index}" data-friend="${name.trim()}">
+                    <option value="not_paid" ${statuses[idx] === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
+                    <option value="paid" ${statuses[idx] === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
+                </select>
+            </li>
+        `).join('');
+
+        // ใส่ข้อมูลใน expense-item
         expenseItem.innerHTML = `
             <h3>${expense[2]}</h3>
             <p>จำนวนเงิน: ${expense[3]} บาท</p>
             <h4>สถานะการจ่ายเงิน:</h4>
-            <ul>
-                ${names.map((name, idx) => `
-                    <li>
-                        <span>${name}</span>  <!-- เพิ่ม data-index -->
-                        <select class="payment-status" data-row="${index}">
-                            <option value="not_paid" ${statuses[idx] === 'not_paid' ? 'selected' : ''}>ยังไม่จ่าย</option>
-                            <option value="paid" ${statuses[idx] === 'paid' ? 'selected' : ''}>จ่ายแล้ว</option>
-                        </select>
-                    </li>
-                `).join('')}
-            </ul>
+            <ul>${friendsHTML}</ul>
         `;
 
         // เพิ่มรายการใหม่ด้านบน
         expenseList.insertBefore(expenseItem, expenseList.firstChild);
-        console.log("insert : ", expenseItem);
     });
 }
+
 
 
 // ฟังก์ชันสำหรับอัปเดตสถานะการจ่ายเงิน
@@ -131,43 +135,41 @@ document.getElementById('expenseList').addEventListener('change', function(event
             return;
         }
 
-        const status = event.target.value; // ค่าใหม่ที่เลือก
-        const rowIndex = event.target.getAttribute('data-row'); // ดัชนีของแถวที่ถูกเลือก
-
+        const status = event.target.value;
+        const rowIndex = event.target.getAttribute('data-row'); // ระบุรายการ
+        const friendId = event.target.getAttribute('data-friend'); // ระบุเพื่อน
         const accessToken = localStorage.getItem('accessToken');
+
         if (!accessToken) {
             console.error('Access token not found.');
             return;
         }
 
-        // ดึงสถานะเพื่อนจากที่เก็บใน UI
-        const expenseItems = document.querySelectorAll('.expense-item');
-        const expenseItem = expenseItems[rowIndex]; // เลือกการ์ดที่ถูกแก้ไข
+        // เลือก expense-item ตาม rowIndex
+        const expenseItem = document.querySelector(`.expense-item[data-row="${rowIndex}"]`);
         const friends = expenseItem.querySelectorAll('ul li span');
-        
-        // หาตำแหน่งของ friend ในรายการที่เลือก
-        const friendIndex = Array.from(friends).findIndex(friend => {
-            return friend === event.target.closest('li').querySelector('span'); // ใช้ closest กับ span
-        });
+
+        // อัปเดตสถานะเพื่อน
+        const friendsStatuses = Array.from(friends).map(friend => friend.nextElementSibling.value);
+        const friendIndex = Array.from(friends).findIndex(friend => friend.getAttribute('data-friend') === friendId);
 
         if (friendIndex === -1) {
-            console.error('Friend not found for status update.');
+            console.error('Friend not found in the list.');
             return;
         }
 
-        // อัปเดตสถานะของเพื่อนคนที่เลือก
-        const updatedStatuses = Array.from(friends).map((friend, index) => {
-            return index === friendIndex ? status : friend.nextElementSibling.value;
-        }).join(', ');
+        friendsStatuses[friendIndex] = status; // เปลี่ยนสถานะ
+
+        // เตรียมข้อมูลสำหรับ Google Sheets
+        const updatedStatuses = friendsStatuses.join(', ');
 
         const requestBody = {
-            range: `${userId}!F${parseInt(rowIndex) + 1}`,
-            values: [[updatedStatuses]] // ต้องเป็น array ซ้อน
+            range: `${userId}!F${parseInt(rowIndex) + 1}`, // ระบุแถวใน Google Sheets
+            values: [[updatedStatuses]]
         };
 
         const requestUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${userId}!F${parseInt(rowIndex) + 1}?valueInputOption=RAW`;
 
-        // ส่งคำขออัปเดตไปยัง Google Sheets API
         fetch(requestUrl, {
             method: 'PUT',
             headers: {
